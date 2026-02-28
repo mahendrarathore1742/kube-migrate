@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#0a0a14"/>
+    </linearGradient>
+    <linearGradient id="k" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#326CE5"/>
+      <stop offset="100%" stop-color="#6C63FF"/>
+    </linearGradient>
+    <linearGradient id="a" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6C63FF"/>
+      <stop offset="100%" stop-color="#00D4AA"/>
+    </linearGradient>
+    <filter id="g">
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+  <rect width="128" height="128" rx="28" fill="none" stroke="#222" stroke-width="1"/>
+
+  <!-- Kubernetes wheel -->
+  <g transform="translate(45, 64)" filter="url(#g)">
+    <circle cx="0" cy="0" r="28" fill="none" stroke="url(#k)" stroke-width="2.5"/>
+    <g stroke="url(#k)" stroke-width="2" stroke-linecap="round">
+      <line x1="0" y1="-13" x2="0" y2="-24"/>
+      <line x1="11.3" y1="6.5" x2="20.8" y2="12"/>
+      <line x1="-11.3" y1="6.5" x2="-20.8" y2="12"/>
+      <line x1="11.3" y1="-6.5" x2="20.8" y2="-12"/>
+      <line x1="-11.3" y1="-6.5" x2="-20.8" y2="-12"/>
+      <line x1="0" y1="13" x2="0" y2="24"/>
+    </g>
+    <circle cx="0" cy="0" r="7" fill="url(#k)" opacity="0.9"/>
+    <circle cx="0" cy="-4" r="1.2" fill="#fff"/>
+    <circle cx="3.5" cy="2" r="1.2" fill="#fff"/>
+    <circle cx="-3.5" cy="2" r="1.2" fill="#fff"/>
+    <circle cx="0" cy="-26" r="3" fill="url(#k)"/>
+    <circle cx="22.5" cy="13" r="3" fill="url(#k)"/>
+    <circle cx="-22.5" cy="13" r="3" fill="url(#k)"/>
+    <circle cx="22.5" cy="-13" r="3" fill="url(#k)"/>
+    <circle cx="-22.5" cy="-13" r="3" fill="url(#k)"/>
+    <circle cx="0" cy="26" r="3" fill="url(#k)"/>
+  </g>
+
+  <!-- Arrow -->
+  <g filter="url(#g)">
+    <path d="M 72 55 L 90 55" stroke="url(#a)" stroke-width="3" stroke-linecap="round"/>
+    <polygon points="88,50 98,55 88,60" fill="#00D4AA"/>
+    <path d="M 72 73 L 90 73" stroke="url(#a)" stroke-width="3" stroke-linecap="round"/>
+    <polygon points="88,68 98,73 88,78" fill="#00D4AA"/>
+  </g>
+
+  <!-- Target dots -->
+  <circle cx="105" cy="55" r="6" fill="none" stroke="#00D4AA" stroke-width="2"/>
+  <circle cx="105" cy="55" r="2.5" fill="#00D4AA"/>
+  <circle cx="105" cy="73" r="6" fill="none" stroke="#00D4AA" stroke-width="2"/>
+  <circle cx="105" cy="73" r="2.5" fill="#00D4AA"/>
+</svg>

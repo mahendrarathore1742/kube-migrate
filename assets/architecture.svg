@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 320" fill="none">
+  <defs>
+    <linearGradient id="blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#326CE5"/>
+      <stop offset="100%" stop-color="#6C63FF"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D4AA"/>
+      <stop offset="100%" stop-color="#00B894"/>
+    </linearGradient>
+    <linearGradient id="purple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6C63FF"/>
+      <stop offset="100%" stop-color="#A78BFA"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#EF4444"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="320" rx="16" fill="#060608"/>
+  <rect width="900" height="320" rx="16" fill="none" stroke="#1a1a2e" stroke-width="1"/>
+
+  <!-- Title -->
+  <text x="450" y="38" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#555" font-weight="600" letter-spacing="2">MIGRATION WORKFLOW</text>
+
+  <!-- Step 1: Detect -->
+  <g filter="url(#shadow)">
+    <rect x="30" y="70" width="180" height="200" rx="16" fill="#0d0d12"/>
+    <rect x="30" y="70" width="180" height="200" rx="16" fill="none" stroke="#326CE5" stroke-width="1.5" opacity="0.4"/>
+    <rect x="30" y="70" width="180" height="44" rx="16" fill="url(#blue)" opacity="0.15"/>
+    <text x="62" y="97" font-family="system-ui, sans-serif" font-size="13" fill="#326CE5" font-weight="700">🔍 DETECT</text>
+    <text x="50" y="140" font-family="system-ui, sans-serif" font-size="11" fill="#888">Scan cluster for:</text>
+    <text x="50" y="162" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• Ingress controller</text>
+    <text x="50" y="180" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• Ingress resources</text>
+    <text x="50" y="198" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• NGINX annotations</text>
+    <text x="50" y="216" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• Complexity score</text>
+    <text x="50" y="248" font-family="monospace" font-size="10" fill="#326CE5" opacity="0.7">POST /api/scan</text>
+  </g>
+
+  <!-- Arrow 1→2 -->
+  <g>
+    <line x1="215" y1="170" x2="245" y2="170" stroke="#333" stroke-width="2" stroke-dasharray="4,3"/>
+    <polygon points="243,165 253,170 243,175" fill="#6C63FF" opacity="0.7"/>
+  </g>
+
+  <!-- Step 2: Analyze -->
+  <g filter="url(#shadow)">
+    <rect x="255" y="70" width="180" height="200" rx="16" fill="#0d0d12"/>
+    <rect x="255" y="70" width="180" height="200" rx="16" fill="none" stroke="#6C63FF" stroke-width="1.5" opacity="0.4"/>
+    <rect x="255" y="70" width="180" height="44" rx="16" fill="url(#purple)" opacity="0.15"/>
+    <text x="287" y="97" font-family="system-ui, sans-serif" font-size="13" fill="#A78BFA" font-weight="700">🔬 ANALYZE</text>
+    <text x="275" y="140" font-family="system-ui, sans-serif" font-size="11" fill="#888">Map annotations to:</text>
+    <text x="275" y="162" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• Traefik equivalents</text>
+    <text x="275" y="180" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• Gateway API policies</text>
+    <text x="275" y="198" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• Compatibility matrix</text>
+    <text x="275" y="216" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• Migration guides</text>
+    <text x="275" y="248" font-family="monospace" font-size="10" fill="#A78BFA" opacity="0.7">POST /api/analyze</text>
+  </g>
+
+  <!-- Arrow 2→3 -->
+  <g>
+    <line x1="440" y1="170" x2="470" y2="170" stroke="#333" stroke-width="2" stroke-dasharray="4,3"/>
+    <polygon points="468,165 478,170 468,175" fill="#00D4AA" opacity="0.7"/>
+  </g>
+
+  <!-- Step 3: Migrate -->
+  <g filter="url(#shadow)">
+    <rect x="480" y="70" width="180" height="200" rx="16" fill="#0d0d12"/>
+    <rect x="480" y="70" width="180" height="200" rx="16" fill="none" stroke="#00D4AA" stroke-width="1.5" opacity="0.4"/>
+    <rect x="480" y="70" width="180" height="44" rx="16" fill="url(#green)" opacity="0.15"/>
+    <text x="512" y="97" font-family="system-ui, sans-serif" font-size="13" fill="#00D4AA" font-weight="700">🚀 MIGRATE</text>
+    <text x="500" y="140" font-family="system-ui, sans-serif" font-size="11" fill="#888">Generate files:</text>
+    <text x="500" y="162" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• Install scripts</text>
+    <text x="500" y="180" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• HTTPRoutes / CRDs</text>
+    <text x="500" y="198" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• Middlewares / Policies</text>
+    <text x="500" y="216" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• DNS + Cleanup guides</text>
+    <text x="500" y="248" font-family="monospace" font-size="10" fill="#00D4AA" opacity="0.7">POST /api/migrate</text>
+  </g>
+
+  <!-- Arrow 3→4 -->
+  <g>
+    <line x1="665" y1="170" x2="695" y2="170" stroke="#333" stroke-width="2" stroke-dasharray="4,3"/>
+    <polygon points="693,165 703,170 693,175" fill="#F59E0B" opacity="0.7"/>
+  </g>
+
+  <!-- Step 4: Validate -->
+  <g filter="url(#shadow)">
+    <rect x="705" y="70" width="170" height="200" rx="16" fill="#0d0d12"/>
+    <rect x="705" y="70" width="170" height="200" rx="16" fill="none" stroke="#F59E0B" stroke-width="1.5" opacity="0.4"/>
+    <rect x="705" y="70" width="170" height="44" rx="16" fill="url(#amber)" opacity="0.15"/>
+    <text x="737" y="97" font-family="system-ui, sans-serif" font-size="13" fill="#F59E0B" font-weight="700">✅ VALIDATE</text>
+    <text x="725" y="140" font-family="system-ui, sans-serif" font-size="11" fill="#888">Verify migration:</text>
+    <text x="725" y="162" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• Controller health</text>
+    <text x="725" y="180" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• Traffic routing</text>
+    <text x="725" y="198" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• DNS cutover steps</text>
+    <text x="725" y="216" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">• NGINX cleanup</text>
+    <text x="725" y="248" font-family="monospace" font-size="10" fill="#F59E0B" opacity="0.7">POST /api/validate</text>
+  </g>
+
+  <!-- Bottom bar: tech stack -->
+  <rect x="30" y="288" width="840" height="1" fill="#1a1a2e"/>
+  <text x="450" y="308" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#444" letter-spacing="1">
+    Go 1.22  ·  Cobra CLI  ·  client-go  ·  React 18  ·  TypeScript  ·  Tailwind CSS  ·  Vite
+  </text>
+</svg>

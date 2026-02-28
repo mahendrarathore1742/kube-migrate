@@ -1,17 +1,27 @@
-# kube-migrate
+<p align="center">
+  <img src="assets/logo.svg" alt="kube-migrate logo" width="600" />
+</p>
 
-**Kubernetes Ingress Migration Tool** — Scan, analyze, and migrate from Ingress NGINX to **Traefik v3** or **Gateway API (Envoy Gateway)** with zero downtime.
+<p align="center">
+  <strong>Kubernetes Ingress Migration Tool</strong> — Scan, analyze, and migrate from Ingress NGINX to <strong>Traefik v3</strong> or <strong>Gateway API (Envoy Gateway)</strong> with zero downtime.
+</p>
 
-![Go](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go&logoColor=white)
-![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?logo=typescript&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green)
+<p align="center">
+  <img src="https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go&logoColor=white" alt="Go" />
+  <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-5.6-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="License" />
+</p>
 
 ---
 
 ## Why kube-migrate?
 
 With the [NGINX Ingress Controller sunset](https://kubernetes.io/blog/2025/01/07/ingress-nginx-end-of-an-era/), teams need to migrate to a supported controller. `kube-migrate` automates the 4-step workflow:
+
+<p align="center">
+  <img src="assets/architecture.svg" alt="kube-migrate workflow" width="800" />
+</p>
 
 1. **🔍 Detect** — Scan your cluster for the ingress controller and all Ingress resources
 2. **🔬 Analyze** — Map every NGINX annotation to its equivalent in the target controller
