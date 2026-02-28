@@ -1,0 +1,8 @@
+# Example kube-migrate configuration file
+# Place this in your working directory as .kube-migrate.yaml
+
+# Annotations to ignore during scan/analysis
+# Any annotation key starting with these prefixes will be skipped
+ignoreAnnotations:
+  # - "my-custom-prefix/"
+  # - "internal.company.io/"

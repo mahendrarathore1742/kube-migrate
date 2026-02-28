@@ -1,0 +1,34 @@
+#!/bin/bash
+set -euo pipefail
+
+echo "=== Verifying Gateway API Migration ==="
+echo ""
+
+# Get Envoy Gateway IP
+EG_IP=$(kubectl get svc -n envoy-gateway-system -l gateway.networking.k8s.io/owning-gateway-name=main-gateway -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' 2>/dev/null)
+
+if [ -z "$EG_IP" ]; then
+  echo "❌ Could not get Envoy Gateway LoadBalancer IP"
+  exit 1
+fi
+
+echo "Envoy Gateway IP: $EG_IP"
+echo ""
+
+echo "Testing admin.example.com..."
+curl -sk --resolve admin.example.com:443:$EG_IP https://admin.example.com/ -o /dev/null -w "  %{http_code} %{time_total}s\n"
+echo "Testing api.example.com..."
+curl -sk --resolve api.example.com:443:$EG_IP https://api.example.com/ -o /dev/null -w "  %{http_code} %{time_total}s\n"
+echo "Testing grpc.example.com..."
+curl -sk --resolve grpc.example.com:443:$EG_IP https://grpc.example.com/ -o /dev/null -w "  %{http_code} %{time_total}s\n"
+echo "Testing old.example.com..."
+curl -sk --resolve old.example.com:443:$EG_IP https://old.example.com/ -o /dev/null -w "  %{http_code} %{time_total}s\n"
+echo "Testing www.example.com..."
+curl -sk --resolve www.example.com:443:$EG_IP https://www.example.com/ -o /dev/null -w "  %{http_code} %{time_total}s\n"
+echo "Testing example.com..."
+curl -sk --resolve example.com:443:$EG_IP https://example.com/ -o /dev/null -w "  %{http_code} %{time_total}s\n"
+echo "Testing ws.example.com..."
+curl -sk --resolve ws.example.com:443:$EG_IP https://ws.example.com/ -o /dev/null -w "  %{http_code} %{time_total}s\n"
+
+echo ""
+echo "✅ Verification complete"

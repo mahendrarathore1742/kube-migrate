@@ -1,0 +1,32 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: api-gateway-rate-limit
+  namespace: demo-app
+spec:
+  rateLimit:
+    average: 100
+    burst: 100
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: api-gateway-forward-auth
+  namespace: demo-app
+spec:
+  forwardAuth:
+    address: "https://auth.example.com/verify"
+    authResponseHeaders:
+      - "X-Auth-User"
+      - "X-Auth-Role"
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: api-gateway-redirect-https
+  namespace: demo-app
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true

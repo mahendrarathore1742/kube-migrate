@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-gateway
+  namespace: demo-app
+  annotations:
+    # Switched to Traefik
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.middlewares: demo-app-api-gateway-rate-limit@kubernetescrd,demo-app-api-gateway-forward-auth@kubernetescrd,demo-app-api-gateway-redirect-https@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - secretName: api-tls
+      hosts:
+        - api.example.com
+  rules:
+    - host: api.example.com
+      http:
+        paths:
+          - path: /v1
+            pathType: Prefix
+            backend:
+              service:
+                name: api-server
+                port:
+                  number: 80
+          - path: /v2
+            pathType: Prefix
+            backend:
+              service:
+                name: api-server
+                port:
+                  number: 80

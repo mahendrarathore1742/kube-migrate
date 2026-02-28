@@ -1,0 +1,13 @@
+kube-migrate
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+web/node_modules/
+web/dist/
+pkg/server/dist/
+.DS_Store
+.env

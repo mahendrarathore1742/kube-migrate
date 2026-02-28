@@ -1,0 +1,10 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: grpc-service-redirect-https
+  namespace: demo-app
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true

@@ -1,0 +1,6 @@
+# Envoy Gateway Helm values
+config:
+  envoyGateway:
+    logging:
+      level:
+        default: info

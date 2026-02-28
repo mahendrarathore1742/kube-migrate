@@ -1,0 +1,48 @@
+# Traefik Helm values — production-ready defaults
+# Docs: https://doc.traefik.io/traefik/
+
+# Replicas for high availability
+deployment:
+  replicas: 2
+
+# Pod anti-affinity to spread across nodes
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: traefik
+          topologyKey: kubernetes.io/hostname
+
+# Minimum availability
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Service — gets its own LoadBalancer IP
+service:
+  enabled: true
+  type: LoadBalancer
+
+# Entrypoints
+ports:
+  web:
+    port: 8000
+    expose:
+      default: true
+    exposedPort: 80
+  websecure:
+    port: 8443
+    expose:
+      default: true
+    exposedPort: 443
+    tls:
+      enabled: true
+
+logs:
+  general:
+    level: INFO
+  access:
+    enabled: true

@@ -1,0 +1,9 @@
+kube-migrate
+coverage.out
+*.test
+web/node_modules
+web/dist
+pkg/server/dist
+.git
+.github
+.vscode

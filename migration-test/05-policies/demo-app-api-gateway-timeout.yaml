@@ -1,0 +1,15 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: api-gateway-timeout
+  namespace: demo-app
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: api-gateway
+  timeout:
+    tcp:
+      connectTimeout: 5s
+    http:
+      requestTimeout: 300s

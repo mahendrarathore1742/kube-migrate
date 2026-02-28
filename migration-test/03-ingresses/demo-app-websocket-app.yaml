@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: websocket-app
+  namespace: demo-app
+  annotations:
+    # Switched to Traefik
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.middlewares: demo-app-websocket-app-redirect-https@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - secretName: ws-tls
+      hosts:
+        - ws.example.com
+  rules:
+    - host: ws.example.com
+      http:
+        paths:
+          - path: /socket.io(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: web-frontend
+                port:
+                  number: 80

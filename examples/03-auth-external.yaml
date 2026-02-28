@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: auth-external
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/auth-url: "http://auth-service.default.svc.cluster.local/verify"
+    nginx.ingress.kubernetes.io/auth-response-headers: "Authorization,X-User-Id,X-Email"
+    nginx.ingress.kubernetes.io/auth-signin: "https://login.example.com/oauth2/start"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - dashboard.example.com
+      secretName: dashboard-tls
+  rules:
+    - host: dashboard.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dashboard
+                port:
+                  number: 80

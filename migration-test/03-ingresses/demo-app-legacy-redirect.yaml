@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: legacy-redirect
+  namespace: demo-app
+  annotations:
+    # Switched to Traefik
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.middlewares: demo-app-legacy-redirect-redirect-https@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: old.example.com
+      http:
+        paths:
+          - path: /legacy(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: web-frontend
+                port:
+                  number: 80
