@@ -18,13 +18,14 @@ const nginxAnnotationPrefix = "nginx.ingress.kubernetes.io/"
 
 // Scanner connects to a Kubernetes cluster and discovers Ingress resources.
 type Scanner struct {
-	clientset *kubernetes.Clientset
+	clientset kubernetes.Interface
 	config    Config
 }
 
 // Clientset returns the underlying Kubernetes clientset for advanced queries.
 func (s *Scanner) Clientset() *kubernetes.Clientset {
-	return s.clientset
+	cs, _ := s.clientset.(*kubernetes.Clientset)
+	return cs
 }
 
 // NewScanner creates a scanner connected to the cluster.

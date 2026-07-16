@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/kube-migrate/kube-migrate/pkg/analyzer"
@@ -216,5 +217,200 @@ func TestNewServer(t *testing.T) {
 	}
 	if srv.port != 3000 {
 		t.Errorf("expected port 3000, got %d", srv.port)
+	}
+}
+
+func TestWriteJSON(t *testing.T) {
+	w := httptest.NewRecorder()
+	data := map[string]string{"key": "value"}
+
+	writeJSON(w, data)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+	if w.Header().Get("Content-Type") != "application/json" {
+		t.Errorf("expected application/json, got %q", w.Header().Get("Content-Type"))
+	}
+}
+
+func TestWriteError(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	writeError(w, http.StatusBadRequest, "invalid request")
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400, got %d", w.Code)
+	}
+	if w.Header().Get("Content-Type") != "application/json" {
+		t.Errorf("expected application/json, got %q", w.Header().Get("Content-Type"))
+	}
+}
+
+func TestHandleScanMethodNotAllowed(t *testing.T) {
+	srv := NewServer("", "", 8080)
+	req := httptest.NewRequest("DELETE", "/api/scan", nil)
+	w := httptest.NewRecorder()
+
+	srv.handleScan(w, req)
+
+	if w.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected 405, got %d", w.Code)
+	}
+}
+
+func TestHandleAnalyzeMethodNotAllowed(t *testing.T) {
+	srv := NewServer("", "", 8080)
+	req := httptest.NewRequest("GET", "/api/analyze", nil)
+	w := httptest.NewRecorder()
+
+	srv.handleAnalyze(w, req)
+
+	if w.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected 405, got %d", w.Code)
+	}
+}
+
+func TestHandleMigrateMethodNotAllowed(t *testing.T) {
+	srv := NewServer("", "", 8080)
+	req := httptest.NewRequest("GET", "/api/migrate", nil)
+	w := httptest.NewRecorder()
+
+	srv.handleMigrate(w, req)
+
+	if w.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected 405, got %d", w.Code)
+	}
+}
+
+func TestHandleValidateMethodNotAllowed(t *testing.T) {
+	srv := NewServer("", "", 8080)
+	req := httptest.NewRequest("GET", "/api/validate", nil)
+	w := httptest.NewRecorder()
+
+	srv.handleValidate(w, req)
+
+	if w.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected 405, got %d", w.Code)
+	}
+}
+
+func TestHandleAnalyzeInvalidTarget(t *testing.T) {
+	srv := NewServer("", "", 8080)
+	req := httptest.NewRequest("POST", "/api/analyze", strings.NewReader(`{"target":"invalid"}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	srv.handleAnalyze(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400, got %d", w.Code)
+	}
+}
+
+func TestHandleMigrateInvalidTarget(t *testing.T) {
+	srv := NewServer("", "", 8080)
+	req := httptest.NewRequest("POST", "/api/migrate", strings.NewReader(`{"target":"invalid"}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	srv.handleMigrate(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400, got %d", w.Code)
+	}
+}
+
+func TestHandleDownloadMissingTarget(t *testing.T) {
+	srv := NewServer("", "", 8080)
+	req := httptest.NewRequest("GET", "/api/download", nil)
+	w := httptest.NewRecorder()
+
+	srv.handleDownload(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400, got %d", w.Code)
+	}
+}
+
+func TestHandleApplyMethodNotAllowed(t *testing.T) {
+	srv := NewServer("", "", 8080)
+	req := httptest.NewRequest("GET", "/api/apply", nil)
+	w := httptest.NewRecorder()
+
+	srv.handleApply(w, req)
+
+	if w.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected 405, got %d", w.Code)
+	}
+}
+
+func TestHandleApplyMissingParams(t *testing.T) {
+	srv := NewServer("", "", 8080)
+	req := httptest.NewRequest("POST", "/api/apply", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	srv.handleApply(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400, got %d", w.Code)
+	}
+}
+
+func TestBodySizeMiddleware(t *testing.T) {
+	called := false
+	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+		w.WriteHeader(http.StatusOK)
+	})
+
+	handler := bodySizeMiddleware(inner)
+
+	// Small request should pass through
+	req := httptest.NewRequest("POST", "/api/test", strings.NewReader("small"))
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+
+	if !called {
+		t.Error("handler was not called")
+	}
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestLoggingMiddlewareNonAPI(t *testing.T) {
+	called := false
+	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+	})
+
+	handler := loggingMiddleware(inner)
+
+	// Non-API request should pass through without logging
+	req := httptest.NewRequest("GET", "/static/file.html", nil)
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+
+	if !called {
+		t.Error("handler was not called for non-API path")
+	}
+}
+
+func TestCorsMiddleware(t *testing.T) {
+	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	handler := corsMiddleware(inner)
+
+	// Test CORS headers on API request
+	req := httptest.NewRequest("GET", "/api/test", nil)
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+
+	if w.Header().Get("Access-Control-Allow-Origin") != "*" {
+		t.Error("expected Access-Control-Allow-Origin header")
 	}
 }
