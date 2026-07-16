@@ -34,7 +34,7 @@ Supported targets:
 
 func init() {
 	analyzeCmd.Flags().StringVar(&analyzeTarget, "target", "", "Target controller: traefik|gateway-api (required)")
-	analyzeCmd.MarkFlagRequired("target")
+	_ = analyzeCmd.MarkFlagRequired("target")
 	analyzeCmd.Flags().StringVarP(&outputFormat, "output", "o", "table", "Output format: table|json")
 	rootCmd.AddCommand(analyzeCmd)
 }

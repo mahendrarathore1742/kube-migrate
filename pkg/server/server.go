@@ -353,7 +353,9 @@ func (s *Server) handleDownload(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/zip")
 	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="migration-%s.zip"`, target))
-	w.Write(zipData)
+	if _, err := w.Write(zipData); err != nil {
+		log.Printf("error writing zip response: %v", err)
+	}
 }
 
 func (s *Server) handleApply(w http.ResponseWriter, r *http.Request) {
@@ -508,13 +510,17 @@ func isKubernetesManifest(content string) bool {
 
 func writeJSON(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		log.Printf("error encoding JSON: %v", err)
+	}
 }
 
 func writeError(w http.ResponseWriter, code int, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(map[string]string{"error": msg})
+	if err := json.NewEncoder(w).Encode(map[string]string{"error": msg}); err != nil {
+		log.Printf("error encoding error response: %v", err)
+	}
 }
 
 // loggingMiddleware logs each API request with method, path, status, and duration.

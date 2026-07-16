@@ -44,7 +44,7 @@ All generated files are valid YAML you can review before applying.`,
 
 func init() {
 	migrateCmd.Flags().StringVar(&migrateTarget, "target", "", "Target controller: traefik|gateway-api (required)")
-	migrateCmd.MarkFlagRequired("target")
+	_ = migrateCmd.MarkFlagRequired("target")
 	migrateCmd.Flags().StringVar(&migrateOutputDir, "output-dir", "./migration", "Output directory for generated files")
 	rootCmd.AddCommand(migrateCmd)
 }

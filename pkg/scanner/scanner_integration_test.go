@@ -160,7 +160,9 @@ func TestScanNamespaceFilter(t *testing.T) {
 			},
 		},
 	}
-	clientset.NetworkingV1().Ingresses("production").Create(context.Background(), ingress2, metav1.CreateOptions{})
+	if _, err := clientset.NetworkingV1().Ingresses("production").Create(context.Background(), ingress2, metav1.CreateOptions{}); err != nil {
+		t.Fatalf("failed to create ingress: %v", err)
+	}
 
 	scanner := newScannerForTest(clientset)
 
