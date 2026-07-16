@@ -398,20 +398,57 @@ func TestLoggingMiddlewareNonAPI(t *testing.T) {
 	}
 }
 
-func TestCorsMiddleware(t *testing.T) {
+func TestCorsMiddlewareAllowedOrigin(t *testing.T) {
 	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
 	handler := corsMiddleware(inner)
 
-	// Test CORS headers on API request
+	// Test CORS headers with allowed origin
 	req := httptest.NewRequest("GET", "/api/test", nil)
+	req.Header.Set("Origin", "http://localhost:5173")
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, req)
 
-	if w.Header().Get("Access-Control-Allow-Origin") != "*" {
-		t.Error("expected Access-Control-Allow-Origin header")
+	if w.Header().Get("Access-Control-Allow-Origin") != "http://localhost:5173" {
+		t.Errorf("expected allowed origin header, got %q", w.Header().Get("Access-Control-Allow-Origin"))
+	}
+}
+
+func TestCorsMiddlewareDisallowedOrigin(t *testing.T) {
+	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	handler := corsMiddleware(inner)
+
+	// Test CORS headers with disallowed origin
+	req := httptest.NewRequest("GET", "/api/test", nil)
+	req.Header.Set("Origin", "https://evil.com")
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+
+	if w.Header().Get("Access-Control-Allow-Origin") != "" {
+		t.Errorf("expected no Allow-Origin header for disallowed origin, got %q", w.Header().Get("Access-Control-Allow-Origin"))
+	}
+}
+
+func TestCorsMiddlewareOptions(t *testing.T) {
+	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	handler := corsMiddleware(inner)
+
+	// Test OPTIONS preflight request
+	req := httptest.NewRequest("OPTIONS", "/api/test", nil)
+	req.Header.Set("Origin", "http://localhost:5173")
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNoContent {
+		t.Errorf("expected 204 for OPTIONS, got %d", w.Code)
 	}
 }
 

@@ -129,12 +129,25 @@ func spaHandler(root http.FileSystem) http.Handler {
 }
 
 // corsMiddleware adds CORS headers for dev mode (frontend on :5173, API on :8080).
+// Only allows requests from localhost origins for security.
 func corsMiddleware(next http.Handler) http.Handler {
+	allowedOrigins := map[string]bool{
+		"http://localhost:5173":  true, // Vite dev server
+		"http://localhost:3000":  true, // Alternative dev port
+		"http://localhost:8080":  true, // Same origin
+		"http://127.0.0.1:5173": true,
+		"http://127.0.0.1:3000": true,
+		"http://127.0.0.1:8080": true,
+	}
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/api/") {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
+			origin := r.Header.Get("Origin")
+			if allowedOrigins[origin] {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+			}
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 			if r.Method == http.MethodOptions {
 				w.WriteHeader(http.StatusNoContent)
 				return
