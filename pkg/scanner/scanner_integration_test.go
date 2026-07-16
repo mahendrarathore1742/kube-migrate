@@ -146,7 +146,9 @@ func TestScanNamespaceFilter(t *testing.T) {
 			},
 		},
 	}
-	clientset.NetworkingV1().Ingresses("default").Create(context.Background(), ingress1, metav1.CreateOptions{})
+	if _, err := clientset.NetworkingV1().Ingresses("default").Create(context.Background(), ingress1, metav1.CreateOptions{}); err != nil {
+		t.Fatalf("failed to create ingress: %v", err)
+	}
 
 	// Add ingress in production namespace
 	ingress2 := &networkingv1.Ingress{
