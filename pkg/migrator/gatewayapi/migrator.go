@@ -2,6 +2,7 @@ package gatewayapi
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/kube-migrate/kube-migrate/pkg/analyzer"
@@ -158,8 +159,16 @@ spec:
 		}
 	}
 
+	// Sort hosts for deterministic output
+	sortedHosts := make([]string, 0, len(tlsHosts))
+	for host := range tlsHosts {
+		sortedHosts = append(sortedHosts, host)
+	}
+	sort.Strings(sortedHosts)
+
 	i := 1
-	for host, secret := range tlsHosts {
+	for _, host := range sortedHosts {
+		secret := tlsHosts[host]
 		b.WriteString(fmt.Sprintf(`    - name: https-%d
       protocol: HTTPS
       port: 443

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	networkingv1 "k8s.io/api/networking/v1"
@@ -108,9 +109,13 @@ func convertIngress(ing networkingv1.Ingress, ignorePrefixes []string) IngressIn
 			hostSet[rule.Host] = true
 		}
 	}
+	// Sort hosts for deterministic output
+	sortedHosts := make([]string, 0, len(hostSet))
 	for h := range hostSet {
-		info.Hosts = append(info.Hosts, h)
+		sortedHosts = append(sortedHosts, h)
 	}
+	sort.Strings(sortedHosts)
+	info.Hosts = sortedHosts
 
 	// Extract TLS
 	for _, tls := range ing.Spec.TLS {
