@@ -31,6 +31,7 @@ type Server struct {
 	kubecontext string
 	port        int
 	cors        bool
+	authToken   string
 }
 
 // NewServer creates a new HTTP server.
@@ -40,6 +41,7 @@ func NewServer(kubeconfig, kubecontext string, port int) *Server {
 		kubecontext: kubecontext,
 		port:        port,
 		cors:        os.Getenv("KUBE_MIGRATE_CORS") == "1",
+		authToken:   os.Getenv("KUBE_MIGRATE_TOKEN"),
 	}
 }
 
@@ -47,15 +49,19 @@ func NewServer(kubeconfig, kubecontext string, port int) *Server {
 func (s *Server) Start() error {
 	mux := http.NewServeMux()
 
-	// API routes
-	mux.HandleFunc("/api/scan", s.handleScan)
-	mux.HandleFunc("/api/analyze", s.handleAnalyze)
-	mux.HandleFunc("/api/migrate", s.handleMigrate)
-	mux.HandleFunc("/api/validate", s.handleValidate)
-	mux.HandleFunc("/api/download", s.handleDownload)
-	mux.HandleFunc("/api/apply", s.handleApply)
+	// API routes with authentication
+	apiMux := http.NewServeMux()
+	apiMux.HandleFunc("/api/scan", s.handleScan)
+	apiMux.HandleFunc("/api/analyze", s.handleAnalyze)
+	apiMux.HandleFunc("/api/migrate", s.handleMigrate)
+	apiMux.HandleFunc("/api/validate", s.handleValidate)
+	apiMux.HandleFunc("/api/download", s.handleDownload)
+	apiMux.HandleFunc("/api/apply", s.handleApply)
 
-	// Serve embedded UI with SPA fallback
+	// Wrap API routes with auth middleware
+	mux.Handle("/api/", s.authMiddleware(apiMux))
+
+	// Serve embedded UI with SPA fallback (no auth required for UI)
 	distFS, err := fs.Sub(uiFS, "dist")
 	if err != nil {
 		return fmt.Errorf("embedding UI: %w", err)
@@ -85,10 +91,18 @@ func (s *Server) Start() error {
 		fmt.Println("\nShutting down server...")
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		srv.Shutdown(ctx) //nolint:errcheck
+		if err := srv.Shutdown(ctx); err != nil {
+			log.Printf("shutdown error: %v", err)
+		}
 	}()
 
-	fmt.Printf("kube-migrate UI running at http://localhost:%d\n", s.port)
+	if s.authToken != "" {
+		fmt.Printf("kube-migrate UI running at http://localhost:%d (auth required)\n", s.port)
+	} else {
+		fmt.Printf("kube-migrate UI running at http://localhost:%d\n", s.port)
+		fmt.Println("WARNING: No authentication token set. Set KUBE_MIGRATE_TOKEN environment variable for security.")
+	}
+
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return err
 	}
@@ -524,6 +538,39 @@ func bodySizeMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// authMiddleware validates the Bearer token for API requests.
+// If no token is configured, all requests are allowed (backwards compatible).
+func (s *Server) authMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// If no auth token configured, allow all requests
+		if s.authToken == "" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Get token from Authorization header
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			writeError(w, http.StatusUnauthorized, "missing Authorization header")
+			return
+		}
+
+		// Expect "Bearer <token>" format
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			writeError(w, http.StatusUnauthorized, "invalid Authorization header format, expected: Bearer <token>")
+			return
+		}
+
+		if parts[1] != s.authToken {
+			writeError(w, http.StatusForbidden, "invalid token")
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func enrichReport(report *analyzer.AnalysisReport, target string) {
 	guides := traefikGuides
 	if target == "gateway-api" {
@@ -534,8 +581,6 @@ func enrichReport(report *analyzer.AnalysisReport, target string) {
 		for j, m := range ir.Mappings {
 			if guide, ok := guides[m.OriginalKey]; ok {
 				report.IngressReports[i].Mappings[j].Note = guide.What
-				// The guide info gets sent as enriched data
-				_ = guide
 			}
 		}
 	}
