@@ -1,14 +1,30 @@
+# Build artifacts
 kube-migrate
 *.exe
 *.dll
 *.so
 *.dylib
+
+# Test artifacts
 *.test
 *.out
+coverage.out
+coverage.html
+
+# Dependencies
 vendor/
+
+# Node.js
 web/node_modules/
 web/dist/
+
+# Embedded UI (keep placeholder)
 pkg/server/dist/*
 !pkg/server/dist/index.html
+
+# OS files
 .DS_Store
+
+# Environment
 .env
+.env.local
