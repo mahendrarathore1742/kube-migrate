@@ -8,6 +8,7 @@ kube-migrate
 vendor/
 web/node_modules/
 web/dist/
-pkg/server/dist/
+pkg/server/dist/*
+!pkg/server/dist/index.html
 .DS_Store
 .env
