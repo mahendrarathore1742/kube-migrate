@@ -2,6 +2,7 @@ package gatewayapi
 
 import (
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
@@ -9,6 +10,19 @@ import (
 	"github.com/kube-migrate/kube-migrate/pkg/generator"
 	"github.com/kube-migrate/kube-migrate/pkg/scanner"
 )
+
+// Version constants with environment variable overrides.
+var (
+	gatewayAPIVersion = getEnvOrDefault("KUBE_MIGRATE_GATEWAY_API_VERSION", "v1.2.0")
+	envoyGatewayVersion = getEnvOrDefault("KUBE_MIGRATE_ENVOY_GATEWAY_VERSION", "v1.3.0")
+)
+
+func getEnvOrDefault(key, defaultValue string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return defaultValue
+}
 
 // Migrator generates Gateway API (Envoy Gateway) migration files.
 type Migrator struct{}
@@ -57,19 +71,19 @@ func (m *Migrator) Migrate(scan *scanner.ScanResult, report *analyzer.AnalysisRe
 func generateCRDInstall() generator.GeneratedFile {
 	return generator.GeneratedFile{
 		RelPath: "01-install-gateway-api-crds/install.sh",
-		Content: `#!/bin/bash
+		Content: fmt.Sprintf(`#!/bin/bash
 set -euo pipefail
 
 echo "=== Installing Gateway API CRDs ==="
 echo "This is safe — it only registers API types, no traffic changes"
 echo ""
 
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/%s/standard-install.yaml
 
 echo ""
 echo "✅ Gateway API CRDs installed"
 kubectl get crd | grep gateway
-`,
+`, gatewayAPIVersion),
 		Description: "Gateway API CRD install script",
 		Category:    "install",
 	}
@@ -78,7 +92,7 @@ kubectl get crd | grep gateway
 func generateEnvoyGatewayInstall() generator.GeneratedFile {
 	return generator.GeneratedFile{
 		RelPath: "02-install-envoy-gateway/helm-install.sh",
-		Content: `#!/bin/bash
+		Content: fmt.Sprintf(`#!/bin/bash
 set -euo pipefail
 
 echo "=== Installing Envoy Gateway ==="
@@ -86,7 +100,7 @@ echo "This installs alongside NGINX — production traffic is unaffected"
 echo ""
 
 helm install eg oci://docker.io/envoyproxy/gateway-helm \
-  --version v1.3.0 \
+  --version %s \
   -n envoy-gateway-system \
   --create-namespace \
   -f "$(dirname "$0")/values.yaml" \
@@ -95,7 +109,7 @@ helm install eg oci://docker.io/envoyproxy/gateway-helm \
 echo ""
 echo "✅ Envoy Gateway installed"
 kubectl get pods -n envoy-gateway-system
-`,
+`, envoyGatewayVersion),
 		Description: "Envoy Gateway Helm install script",
 		Category:    "install",
 	}
