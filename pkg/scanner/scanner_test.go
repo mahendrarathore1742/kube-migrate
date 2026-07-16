@@ -91,9 +91,3 @@ func TestShouldIgnoreAnnotation(t *testing.T) {
 		})
 	}
 }
-
-func TestConvertIngressHosts(t *testing.T) {
-	// Test that convertIngress extracts hosts from rules correctly
-	// This is tested indirectly through the classifyComplexity function
-	// since convertIngress requires a full networkingv1.Ingress object
-}
