@@ -1,8 +1,20 @@
 # Example kube-migrate configuration file
 # Place this in your working directory as .kube-migrate.yaml
 
+# Target controller: "traefik" or "gateway-api"
+# Default: prompts user during migration
+target: traefik
+
+# Output directory for generated migration files
+# Default: "./migration"
+outputDir: ./migration
+
+# Kubernetes namespace to scan (empty = all namespaces)
+# Default: "" (all namespaces)
+namespace: ""
+
 # Annotations to ignore during scan/analysis
 # Any annotation key starting with these prefixes will be skipped
 ignoreAnnotations:
-  # - "my-custom-prefix/"
-  # - "internal.company.io/"
+  - "my-custom-prefix/"
+  - "internal.company.io/"

@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"fmt"
 	"os"
 
 	"sigs.k8s.io/yaml"
@@ -10,7 +11,18 @@ const configFileName = ".kube-migrate.yaml"
 
 // Config holds user overrides loaded from .kube-migrate.yaml.
 type Config struct {
+	Target            string   `yaml:"target" json:"target"`
+	OutputDir         string   `yaml:"outputDir" json:"outputDir"`
+	Namespace         string   `yaml:"namespace" json:"namespace"`
 	IgnoreAnnotations []string `yaml:"ignoreAnnotations" json:"ignoreAnnotations"`
+}
+
+// Validate checks the config for valid values.
+func (c *Config) Validate() error {
+	if c.Target != "" && c.Target != "traefik" && c.Target != "gateway-api" {
+		return fmt.Errorf("invalid target %q: must be 'traefik' or 'gateway-api'", c.Target)
+	}
+	return nil
 }
 
 var builtinIgnorePrefixes = []string{
