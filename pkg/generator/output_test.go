@@ -1,6 +1,8 @@
 package generator
 
 import (
+	"archive/zip"
+	"bytes"
 	"os"
 	"path/filepath"
 	"testing"
@@ -100,6 +102,154 @@ func TestBuildReport(t *testing.T) {
 	}
 	if !contains(md, "my-app") {
 		t.Error("report missing ingress name")
+	}
+}
+
+func TestBuildReportFile(t *testing.T) {
+	gen := NewOutputGenerator(".")
+	report := &analyzer.AnalysisReport{
+		Target: "traefik",
+		Summary: analyzer.Summary{
+			Total:           2,
+			FullyCompatible: 2,
+		},
+		IngressReports: []analyzer.IngressReport{
+			{
+				Namespace:     "production",
+				Name:          "api-gateway",
+				OverallStatus: "ready",
+				Mappings: []analyzer.AnnotationMapping{
+					{
+						OriginalKey:    "limit-rps",
+						OriginalValue:  "100",
+						Status:         "supported",
+						TargetResource: "Middleware (RateLimit)",
+						Note:           "Use RateLimit middleware",
+					},
+				},
+			},
+		},
+	}
+
+	file := gen.BuildReportFile(report)
+
+	if file.Category != "guide" {
+		t.Errorf("expected category 'guide', got %q", file.Category)
+	}
+	if file.RelPath != "00-migration-report.md" {
+		t.Errorf("expected path '00-migration-report.md', got %q", file.RelPath)
+	}
+	if !contains(file.Content, "traefik") {
+		t.Error("report content missing target")
+	}
+	if !contains(file.Content, "api-gateway") {
+		t.Error("report content missing ingress name")
+	}
+}
+
+func TestCreateZip(t *testing.T) {
+	files := []GeneratedFile{
+		{
+			RelPath:     "install.sh",
+			Content:     "#!/bin/bash\necho install",
+			Description: "Install script",
+			Category:    "install",
+		},
+		{
+			RelPath:     "route.yaml",
+			Content:     "apiVersion: gateway.networking.k8s.io/v1\nkind: HTTPRoute",
+			Description: "HTTPRoute",
+			Category:    "httproute",
+		},
+	}
+
+	report := &analyzer.AnalysisReport{
+		Target: "gateway-api",
+		Summary: analyzer.Summary{
+			Total:           1,
+			FullyCompatible: 1,
+		},
+	}
+
+	zipData, err := CreateZip(files, report)
+	if err != nil {
+		t.Fatalf("CreateZip failed: %v", err)
+	}
+
+	if len(zipData) == 0 {
+		t.Fatal("CreateZip returned empty data")
+	}
+
+	// Verify it's a valid ZIP
+	zipReader, err := zip.NewReader(bytes.NewReader(zipData), int64(len(zipData)))
+	if err != nil {
+		t.Fatalf("invalid ZIP data: %v", err)
+	}
+
+	// Check expected files
+	expectedFiles := map[string]bool{
+		"install.sh":            false,
+		"route.yaml":            false,
+		"00-migration-report.md": false,
+	}
+
+	for _, f := range zipReader.File {
+		name := f.FileInfo().Name()
+		if _, ok := expectedFiles[name]; ok {
+			expectedFiles[name] = true
+		}
+	}
+
+	for name, found := range expectedFiles {
+		if !found {
+			t.Errorf("ZIP missing expected file: %s", name)
+		}
+	}
+}
+
+func TestCreateZipEmpty(t *testing.T) {
+	files := []GeneratedFile{}
+	report := &analyzer.AnalysisReport{
+		Target: "traefik",
+		Summary: analyzer.Summary{
+			Total: 0,
+		},
+	}
+
+	zipData, err := CreateZip(files, report)
+	if err != nil {
+		t.Fatalf("CreateZip failed: %v", err)
+	}
+
+	if len(zipData) == 0 {
+		t.Fatal("CreateZip returned empty data for empty input")
+	}
+}
+
+func TestGenerateMigrationReport(t *testing.T) {
+	report := &analyzer.AnalysisReport{
+		Target: "traefik",
+		Summary: analyzer.Summary{
+			Total:           5,
+			FullyCompatible: 3,
+			NeedsWorkaround: 1,
+			HasUnsupported:  1,
+		},
+	}
+
+	content := GenerateMigrationReport([]GeneratedFile{}, report)
+
+	if content == "" {
+		t.Fatal("GenerateMigrationReport returned empty string")
+	}
+	if !contains(content, "5") {
+		t.Error("report missing total count")
+	}
+	if !contains(content, "3") {
+		t.Error("report missing compatible count")
+	}
+	if !contains(content, "traefik") {
+		t.Error("report missing target name")
 	}
 }
 

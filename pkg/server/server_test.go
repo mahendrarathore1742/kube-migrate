@@ -2,7 +2,12 @@ package server
 
 import (
 	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
+
+	"github.com/kube-migrate/kube-migrate/pkg/analyzer"
 )
 
 func TestIsKubernetesManifest(t *testing.T) {
@@ -97,5 +102,119 @@ func TestBuildSteps(t *testing.T) {
 		if len(steps) == 0 {
 			t.Errorf("buildSteps(%s, %s) returned empty", tc.target, tc.phase)
 		}
+	}
+}
+
+func TestBuildStepsEmptyPhase(t *testing.T) {
+	steps := buildSteps("traefik", "unknown-phase", false)
+	if steps != nil {
+		t.Errorf("expected nil for unknown phase, got %v", steps)
+	}
+}
+
+func TestEnrichReport(t *testing.T) {
+	report := &analyzer.AnalysisReport{
+		Target: "traefik",
+		IngressReports: []analyzer.IngressReport{
+			{
+				Namespace: "default",
+				Name:      "my-app",
+				Mappings: []analyzer.AnnotationMapping{
+					{
+						OriginalKey: "ssl-redirect",
+						Note:        "original note",
+					},
+					{
+						OriginalKey: "unknown-annotation",
+						Note:        "keep this",
+					},
+				},
+			},
+		},
+	}
+
+	enrichReport(report, "traefik")
+
+	// First annotation should be enriched
+	if report.IngressReports[0].Mappings[0].Note == "original note" {
+		t.Error("enrichReport did not update note for ssl-redirect")
+	}
+
+	// Unknown annotation should keep original note
+	if report.IngressReports[0].Mappings[1].Note != "keep this" {
+		t.Error("enrichReport modified unknown annotation note")
+	}
+}
+
+func TestEnrichReportGatewayAPI(t *testing.T) {
+	report := &analyzer.AnalysisReport{
+		Target: "gateway-api",
+		IngressReports: []analyzer.IngressReport{
+			{
+				Namespace: "default",
+				Name:      "api-gateway",
+				Mappings: []analyzer.AnnotationMapping{
+					{
+						OriginalKey: "ssl-redirect",
+						Note:        "old",
+					},
+				},
+			},
+		},
+	}
+
+	enrichReport(report, "gateway-api")
+
+	// Should use gatewayAPIGuides
+	if report.IngressReports[0].Mappings[0].Note == "old" {
+		t.Error("enrichReport did not update note for gateway-api target")
+	}
+}
+
+func TestSPAHandler(t *testing.T) {
+	// Create a temporary directory with test files
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "test.html")
+	if err := os.WriteFile(testFile, []byte("<html>test</html>"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	handler := spaHandler(http.Dir(tmpDir))
+	if handler == nil {
+		t.Error("spaHandler returned nil")
+	}
+}
+
+func TestSPAHandlerFallback(t *testing.T) {
+	tmpDir := t.TempDir()
+	// Create index.html
+	indexFile := filepath.Join(tmpDir, "index.html")
+	if err := os.WriteFile(indexFile, []byte("<html>index</html>"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	handler := spaHandler(http.Dir(tmpDir))
+
+	// Request for non-existent file should fallback to index.html
+	req := httptest.NewRequest("GET", "/nonexistent", nil)
+	w := httptest.NewRecorder()
+
+	handler.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestNewServer(t *testing.T) {
+	srv := NewServer("/path/to/kubeconfig", "my-context", 3000)
+	if srv.kubeconfig != "/path/to/kubeconfig" {
+		t.Errorf("expected kubeconfig '/path/to/kubeconfig', got %q", srv.kubeconfig)
+	}
+	if srv.kubecontext != "my-context" {
+		t.Errorf("expected context 'my-context', got %q", srv.kubecontext)
+	}
+	if srv.port != 3000 {
+		t.Errorf("expected port 3000, got %d", srv.port)
 	}
 }
