@@ -26,8 +26,14 @@ test:
 vet:
 	$(GO) vet ./...
 
-## lint: Run go vet (install golangci-lint for full linting)
-lint: vet
+## lint: Run golangci-lint (falls back to go vet if not installed)
+lint:
+	@if command -v golangci-lint >/dev/null 2>&1; then \
+		golangci-lint run; \
+	else \
+		echo "golangci-lint not found, falling back to go vet"; \
+		$(GO) vet ./...; \
+	fi
 
 ## run-ui: Start the local UI (requires cluster access)
 run-ui: build
