@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
+import SearchModal from './components/SearchModal';
 import Home from './pages/Home';
 import Installation from './pages/Installation';
 import QuickStart from './pages/QuickStart';
@@ -15,9 +17,27 @@ import Architecture from './pages/Architecture';
 import Contributing from './pages/Contributing';
 
 export default function App() {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Cmd+K or Ctrl+K or '/' key outside input elements
+      if (
+        (e.key === 'k' && (e.metaKey || e.ctrlKey)) ||
+        (e.key === '/' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName))
+      ) {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-[#050505]">
-      <Sidebar />
+      <Sidebar onOpenSearch={() => setIsSearchOpen(true)} />
       <main className="flex-1 ml-64 p-8 lg:p-12">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -36,6 +56,8 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
+
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </div>
   );
 }
